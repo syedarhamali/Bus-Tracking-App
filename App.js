@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, SafeAreaView } from "react-native";
 import HomeScreen from "./screens/HomeScreen";
-import DropOffLocation from "./screens/DropOffLocation";
 import AppSplashScreen from "./screens/splashScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -28,11 +27,6 @@ export default function App() {
               name="Home"
               component={HomeScreen}
               options={{ title: "Catch a Bus" }}
-            />
-            <Stack.Screen
-              name="DropOffLocation"
-              component={DropOffLocation}
-              options={{ title: "Drop Off Location" }}
             />
           </Stack.Navigator>
         </NavigationContainer>

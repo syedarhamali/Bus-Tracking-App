@@ -9,9 +9,7 @@ import {
   Button,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as Location from "expo-location";
-import { addPickUpLocation } from "../../redux/store/actions/PickUpActions";
 import { useDispatch } from "react-redux";
 import RBSheet from "react-native-raw-bottom-sheet";
 import LocationTracker from "../../components/locationTracker";
@@ -161,7 +159,7 @@ export default function HomeScreen({ navigation }) {
           left: 20,
         }}
       >
-        <Button title="Search Buses" style={{flex: 1}} onPress={() => this.RBSheet.open()} />
+        <Button title="Search Buses stops" style={{flex: 1}} onPress={() => this.RBSheet.open()} />
         <RBSheet
           ref={(ref) => {
             this.RBSheet = ref;
