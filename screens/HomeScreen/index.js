@@ -23,18 +23,58 @@ export default function HomeScreen({ navigation }) {
   const dispatch = useDispatch();
   const [buses,setBuses] = useState([])
   const [locationCords, setlocationCords] = useState({
-    latitude: 0.92392,
-    longitude: 0.92392,
+    latitude: 24.8873273,
+    longitude: 67.19873,
     latitudeDelta: 100,
     longitudeDelta: 100,
   });
-  const [searchResults, setSearchResults] = useState();
+  const [busStops, setBusStops] = useState([]);
   const [locationGranted, setlocationGranted] = useState(false);
+  
 
   useEffect(() => {
     getLocation();
   }, []);
 
+  useEffect(() => {
+    const findBusStops = async () => {
+      const query = "bus"; // Modify the query based on your specific needs
+
+      const options = {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          Authorization: "fsq34gc/yKyBdZkNfXX3BXp9IhG26f3TQrvukFhlyrhJr9E=", // Replace with your Foursquare API access token
+        },
+      };
+
+      fetch(
+        `https://api.foursquare.com/v3/places/nearby?ll=24.8873273%2C67.1987343&&fields=distance%2Cname%2Clocation&&query=${query}`,
+        options
+      )
+        .then((response) => response.json())
+        .then((response) => {
+          const busStopsData = response?.results;
+          console.log(response.results);
+          // busStopData = response.results;
+          let shortestDistance = Number.MAX_VALUE;
+          let nearestStop = null;
+
+          for (const busStop of busStopsData) {
+            const distance = busStop.distance;
+            if (distance < shortestDistance) {
+              shortestDistance = distance;
+              nearestStop = busStop;
+            }
+          }
+          busStopsData.sort((a, b) => a.distance - b.distance);
+          setBusStops(busStopsData);
+        })
+        .catch((err) => console.error(err));
+    };
+
+    findBusStops();
+  }, []);
   useEffect(() => {
     const q = query(collection(firebaseDb, "buses"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -66,49 +106,14 @@ export default function HomeScreen({ navigation }) {
     setlocationCords({ latitude, longitude, latitudeDelta, longitudeDelta });
     setlocationGranted(true);
   }
-
-  // function searchLocation(query) {
-  //   try {
-  //     const options = {
-  //       method: "GET",
-  //       headers: {
-  //         accept: "application/json",
-  //         Authorization: "fsq34gc/yKyBdZkNfXX3BXp9IhG26f3TQrvukFhlyrhJr9E=",
-  //       },
-  //     };
-
-  //     fetch(
-  //       `https://api.foursquare.com/v3/places/search?query=${query}&ll=${locationCords.latitude}%2C${locationCords.longitude}&radius=100000&sort=DISTANCE`,
-  //       options
-  //     )
-  //       .then((response) => response.json())
-  //       .then((response) => setSearchResults(response.results))
-  //       .catch((err) => console.error(err));
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }
-  // const ItemView = ({ item }) => {
-  //   const { longitude, latitude } = item.geocodes.main;
-  //   const setLocation = () => {
-  //     setlocationCords({ ...locationCords, latitude, longitude });
-  //     setlocationGranted(true);
-  //     setSearchResults("");
-  //     setlocationGranted(true);
-  //   };
-  //   return (
-  //     <View style={{ paddingTop: 15, margin: 1, color: "white" }}>
-  //       <Text style={{ margin: 2, padding: 1 }} onPress={() => setLocation()}>
-  //         {item.name}
-  //         {" " + item.location.formatted_address}
-  //       </Text>
-  //     </View>
-  //   );
-  // };
-  // const navigateToDropOff = () => {
-  //   locationGranted ? navigation.navigate("DropOffLocation") : getLocation();
-  //   dispatch(addPickUpLocation(locationCords));
-  // };
+    const renderItem = ({ item }) => (
+      <View style={styles.itemContainer}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <View style={styles.distanceBadge}>
+          <Text style={styles.distanceText}>{item.distance   /1000} kilometers</Text>
+        </View>
+      </View>
+    );
   return (
     <>
       <View>
@@ -117,7 +122,7 @@ export default function HomeScreen({ navigation }) {
           {locationGranted && (
             <Marker
               coordinate={locationCords}
-              title={"your PickUp Location"}
+              title={"current Location"}
               description={"confirm pickup??"}
             />
           )}
@@ -139,8 +144,11 @@ export default function HomeScreen({ navigation }) {
         </MapView>
 
         <Text style={styles.searchInput}>
-          <AnimatedButton title="Next Bus in 01:00 minutes" color="blue" />
-          <AnimatedButton title={`Total Buses:${buses?.length} `} color="green" />
+          <AnimatedButton title={`Nearest stand: ${busStops[0]?.distance / 1000}km`} color="blue" />
+          <AnimatedButton
+            title={`Total Buses:${buses?.length} `}
+            color="green"
+          />
         </Text>
       </View>
       <View
@@ -153,7 +161,7 @@ export default function HomeScreen({ navigation }) {
           left: 20,
         }}
       >
-        <Button title="OPEN BOTTOM SHEET" onPress={() => this.RBSheet.open()} />
+        <Button title="Search Buses" style={{flex: 1}} onPress={() => this.RBSheet.open()} />
         <RBSheet
           ref={(ref) => {
             this.RBSheet = ref;
@@ -168,8 +176,15 @@ export default function HomeScreen({ navigation }) {
           }}
           dragFromTopOnly={true}
         >
-          <Text>abc</Text>
-          {/* <YourOwnComponent /> */}
+          <View>
+            {busStops?.length > 0 && (
+              <FlatList
+                data={busStops}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.name}
+              />
+            )}
+          </View>
         </RBSheet>
       </View>
     </>
@@ -204,14 +219,39 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     position: "absolute",
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
     top: 0,
     width: "100%",
     paddingLeft: 6,
     paddingRight: 10,
     color: "white",
     height: "8%",
+  },
+  itemContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginBottom: 10,
+    
+  },
+  itemName: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  distanceBadge: {
+    backgroundColor: "blue",
+    borderRadius: 10,
+    padding: 5,
+  },
+  distanceText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
   },
 });

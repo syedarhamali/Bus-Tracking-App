@@ -28,7 +28,7 @@ const AnimatedButton = ({ title, color }) => {
 
   const animatedStyle = {
     backgroundColor: color,
-    width: Dimensions.get("window").width * 0.4, // Set width to 40% of the window width
+    width: Dimensions.get("window").width * 0.5, // Set width to 50% of the window width
   };
 
   return (
@@ -49,6 +49,8 @@ const styles = StyleSheet.create({
   button: {
     marginBottom: 20,
     alignItems: "center",
+    padding: 10,
+    margin: 20
   },
   buttonContainer: {
     borderRadius: 10,

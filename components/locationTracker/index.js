@@ -57,7 +57,7 @@ const LocationTracker = () => {
             const distance = calculateDistance(dx, dy, dz);
             distanceCovered += distance;
             console.log("distance cOVERED", distanceCovered);
-            if (distanceCovered >= 0.05) {
+            if (distanceCovered >= 0.1) {
               // Adjust this distance threshold according to your needs
               Location.getCurrentPositionAsync({})
                 .then((location) => {

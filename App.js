@@ -3,7 +3,6 @@ import { StyleSheet, SafeAreaView } from "react-native";
 import HomeScreen from "./screens/HomeScreen";
 import DropOffLocation from "./screens/DropOffLocation";
 import AppSplashScreen from "./screens/splashScreen";
-import RideSelection from "./screens/RideSelection";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import store from "./redux/store";
@@ -34,11 +33,6 @@ export default function App() {
               name="DropOffLocation"
               component={DropOffLocation}
               options={{ title: "Drop Off Location" }}
-            />
-            <Stack.Screen
-              name="RideSelection"
-              component={RideSelection}
-              options={{ title: "RideSelection" }}
             />
           </Stack.Navigator>
         </NavigationContainer>
